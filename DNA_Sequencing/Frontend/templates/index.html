@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تحليل DNA</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1 class="text-center mb-4">تحليل تسلسل DNA</h1>
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-body">
+              <form
+                action="/upload"
+                method="post"
+                enctype="multipart/form-data"
+              >
+                <div class="mb-3">
+                  <label for="file" class="form-label">اختر ملف DNA:</label>
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="file"
+                    name="file"
+                  />
+                  <small class="text-muted"
+                    >الصيغ المدعومة: FASTA, FASTQ, TXT</small
+                  >
+                </div>
+                <div class="mb-3">
+                  <label for="sequence_text" class="form-label"
+                    >أو أدخل تسلسل DNA مباشرة:</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="sequence_text"
+                    name="sequence_text"
+                    rows="4"
+                  ></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">تحليل</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

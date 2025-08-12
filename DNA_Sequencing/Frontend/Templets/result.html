@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نتائج تحليل التسلسل</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container my-5">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">الرئيسية</a></li>
+                <li class="breadcrumb-item active">نتائج التحليل</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- Sequence Info Card -->
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">معلومات التسلسل</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            {{ results.statistics.summary }}
+                        </div>
+                        <dl class="row">
+                            <dt class="col-sm-3">الطول:</dt>
+                            <dd class="col-sm-9">{{ results.sequence_info.length }} نيوكليوتيد</dd>
+                            
+                            <dt class="col-sm-3">التسلسل المنظف:</dt>
+                            <dd class="col-sm-9">
+                                <code class="sequence-preview">{{ results.sequence_info.cleaned_sequence }}</code>
+                            </dd>
+
+                            {% if results.file_info %}
+                            <dt class="col-sm-3">معرف التسلسل:</dt>
+                            <dd class="col-sm-9">{{ results.file_info.sequence_id }}</dd>
+                            
+                            <dt class="col-sm-3">الوصف:</dt>
+                            <dd class="col-sm-9">{{ results.file_info.description }}</dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Composition Chart -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">تركيب النيوكليوتيدات</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="compositionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GC Content Chart -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">محتوى GC</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="gcChart"></canvas>
+                        </div>
+                        <div class="text-center mt-3">
+                            <h3>{{ "%.2f"|format(results.gc_content) }}%</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Chart -->
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">إحصائيات التسلسل</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="statsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Motifs Card -->
+            {% if results.motifs %}
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">المواضع المكتشفة</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>الموضع</th>
+                                        <th>عدد التكرارات</th>
+                                        <th>المواقع</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for motif, data in results.motifs.items() %}
+                                    <tr>
+                                        <td><code>{{ motif }}</code></td>
+                                        <td>{{ data.count }}</td>
+                                        <td>{{ data.positions|join(", ") }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Translation Results -->
+            {% if results.translation %}
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">نتائج الترجمة</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6>RNA:</h6>
+                            <code class="sequence-preview">{{ results.translation.rna }}</code>
+                        </div>
+                        <div class="mb-4">
+                            <h6>البروتين:</h6>
+                            <code class="sequence-preview">{{ results.translation.protein }}</code>
+                        </div>
+                        {% if results.translation.orfs %}
+                        <div>
+                            <h6>أطر القراءة المفتوحة:</h6>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>الإطار</th>
+                                            <th>الطول</th>
+                                            <th>البداية</th>
+                                            <th>النهاية</th>
+                                            <th>التسلسل</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for orf in results.translation.orfs %}
+                                        <tr>
+                                            <td>{{ orf.frame }}</td>
+                                            <td>{{ orf.length }}</td>
+                                            <td>{{ orf.start }}</td>
+                                            <td>{{ orf.end }}</td>
+                                            <td><code>{{ orf.sequence }}</code></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Export Options -->
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">تصدير النتائج</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="exportResults('pdf')">
+                                <i class="bi bi-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-success" onclick="exportResults('csv')">
+                                <i class="bi bi-file-spreadsheet"></i> CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pass the analysis results to JavaScript
+        const analysisResults = JSON.parse('{{ results|tojson|safe }}');
+        
+        // Initialize charts when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts(analysisResults);
+        });
+    </script>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
